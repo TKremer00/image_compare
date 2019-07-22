@@ -1,22 +1,21 @@
 package sample;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import views.Gui;
 
 public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        GridPane root = new GridPane();
+        Pane root = new Pane();
         primaryStage.setScene(new Scene(root, 300, 275));
 
         new Gui(root);
 
-        primaryStage.setTitle("CompareImages");
+        primaryStage.setTitle("Compare images");
         primaryStage.show();
 
 
