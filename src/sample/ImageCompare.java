@@ -6,9 +6,18 @@ import java.io.File;
 import java.io.IOException;
 
 public class ImageCompare {
-    public boolean compareWithBaseImage(File baseImage, File compareImage)  throws IOException {
-        BufferedImage bImage = ImageIO.read(baseImage);
-        BufferedImage cImage = ImageIO.read(compareImage);
+
+    public static boolean compareWithBaseImage(File baseImage, File compareImage) {
+
+        BufferedImage bImage;
+        BufferedImage cImage;
+        try {
+            bImage = ImageIO.read(baseImage);
+            cImage = ImageIO.read(compareImage);
+        }catch (Exception e) {
+            System.out.println("Read Image\n" + e.getMessage());
+            return false;
+        }
 
         int height = bImage.getHeight();
         int width = bImage.getWidth();
