@@ -2,34 +2,38 @@ package views;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.StackPane;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.stage.Modality;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
+import sample.FileHandler;
 
 public class Gui {
 
     private final ToggleGroup selectInput;
+    private FileHandler fileHandler;
     private FileInput fileInput;
     private DirInput dirInput;
-    private ObservableList<String> extentions;
+
 
     public Gui(Pane p) {
         selectInput = new ToggleGroup();
-
-        fileInput = new FileInput();
-        fileInput.setTranslateX(20);
-        fileInput.setTranslateY(100);
-        p.getChildren().add(fileInput);
+        fileHandler = new FileHandler();
 
         dirInput = new DirInput();
         dirInput.setTranslateX(20);
         dirInput.setTranslateY(100);
+        p.getChildren().add(dirInput);
 
-        extentions = FXCollections.observableArrayList("png","jpg");
+        fileInput = new FileInput();
+        fileInput.setTranslateX(20);
+        fileInput.setTranslateY(100);
+
+        ObservableList<String> extensions = FXCollections.observableArrayList("png","jpg");
 
         Text text = new Text("Input method");
         text.setX(10);
@@ -43,20 +47,21 @@ public class Gui {
         line.setEndY(30);
         p.getChildren().add(line);
 
-        RadioButton rbFile = new RadioButton("File");
-        rbFile.setToggleGroup(selectInput);
-        rbFile.setTranslateX(20);
-        rbFile.setTranslateY(40);
-        rbFile.setSelected(true);
-        p.getChildren().add(rbFile);
 
         RadioButton rbDir = new RadioButton("Directory");
         rbDir.setToggleGroup(selectInput);
-        rbDir.setTranslateX(110);
+        rbDir.setTranslateX(20);
         rbDir.setTranslateY(40);
+        rbDir.setSelected(true);
         p.getChildren().add(rbDir);
 
-        Text titleInput = new Text("File input");
+        RadioButton rbFile = new RadioButton("File");
+        rbFile.setToggleGroup(selectInput);
+        rbFile.setTranslateX(110);
+        rbFile.setTranslateY(40);
+        p.getChildren().add(rbFile);
+
+        Text titleInput = new Text("Directory input");
         titleInput.setX(10);
         titleInput.setY(75);
         p.getChildren().add(titleInput);
@@ -68,41 +73,77 @@ public class Gui {
         lineInput.setEndY(90);
         p.getChildren().add(lineInput);
 
-        Text titleExtention = new Text("File input");
-        titleExtention.setX(10);
-        titleExtention.setY(170);
-        p.getChildren().add(titleExtention);
+        Text titleExtensions = new Text("Details");
+        titleExtensions.setX(10);
+        titleExtensions.setY(230);
+        p.getChildren().add(titleExtensions);
 
-        Line lineExtention = new Line();
-        lineExtention.setStartX(10);
-        lineExtention.setStartY(185);
-        lineExtention.setEndX(250);
-        lineExtention.setEndY(185);
-        p.getChildren().add(lineExtention);
+        Line lineExtensions = new Line();
+        lineExtensions.setStartX(10);
+        lineExtensions.setStartY(245);
+        lineExtensions.setEndX(250);
+        lineExtensions.setEndY(245);
+        p.getChildren().add(lineExtensions);
 
 
-        ComboBox cbExtention = new ComboBox();
-        cbExtention.setItems(extentions);
-        cbExtention.setTranslateX(20);
-        cbExtention.setTranslateY(195);
-        p.getChildren().add(cbExtention);
-
-        //Event listener Toggle group
-        selectInput.selectedToggleProperty().addListener(event -> {
-            if(rbFile.isSelected()) {
-                titleInput.setText("File input");
-                p.getChildren().remove(dirInput);
-                p.getChildren().add(fileInput);
-            }else if(rbDir.isSelected()){
-                titleInput.setText("Directory input");
-                p.getChildren().remove(fileInput);
-                p.getChildren().add(dirInput);
-            }
-        });
+        ComboBox cbExtensions = new ComboBox();
+        cbExtensions.setItems(extensions);
+        cbExtensions.getSelectionModel().select(0);
+        cbExtensions.setTranslateX(20);
+        cbExtensions.setTranslateY(255);
+        p.getChildren().add(cbExtensions);
 
         Button btnRun = new Button("Run");
         btnRun.setTranslateX(215);
-        btnRun.setTranslateY(210);
+        btnRun.setTranslateY(280);
         p.getChildren().add(btnRun);
+
+
+        //Event listener Toggle group
+        selectInput.selectedToggleProperty().addListener(event -> {
+            if(rbDir.isSelected()){
+                titleInput.setText("Directory input");
+                p.getChildren().remove(fileInput);
+                p.getChildren().add(dirInput);
+            }else if(rbFile.isSelected()) {
+                titleInput.setText("File input");
+                p.getChildren().remove(dirInput);
+                p.getChildren().add(fileInput);
+            }
+        });
+
+        btnRun.setOnAction(event -> {
+
+            fileHandler.setFileExtension(cbExtensions.getSelectionModel().getSelectedItem().toString());
+
+            if(rbFile.isSelected()) {
+                fileHandler.setInputFile1(fileInput.getFile1String());
+                fileHandler.setInputFile2(fileInput.getFile2String());
+
+                StackPane stackPane = new StackPane(new Text("Something went wrong"));
+                if(fileHandler.compare2Images()) {
+                    stackPane = new StackPane(new Text("Images are the same"));
+
+                }else {
+                    stackPane = new StackPane(new Text("Images aren't the same"));
+                }
+                Scene popupScene = new Scene(stackPane, 75, 75);
+                Stage popupStage = new Stage();
+                popupStage.initModality(Modality.APPLICATION_MODAL);
+                popupStage.setScene(popupScene);
+                popupStage.setResizable(false); // prevents resize and removes minimize and maximize buttons
+                popupStage.show();
+
+            }else if (rbDir.isSelected()) {
+                fileHandler.setInputDirectory(dirInput.getDirString());
+
+                if(dirInput.getRbDelete()) {
+                    fileHandler.deleteSameImages();
+                }else {
+                    fileHandler.compareImages();
+                }
+            }
+        });
+
     }
 }

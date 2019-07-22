@@ -1,33 +1,101 @@
 package sample;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class FileHandler {
 
-    private String inputFolder;
+    private String inputDirectory;
     private String inputFile1,inputFile2;
-    private String fileExtention = ".jpg";
-
-    public FileHandler(String inputFolder) {
-        this.inputFolder = inputFolder;
-    }
-
-    public FileHandler(String inputFile1,String inputFile2) {
-        this.inputFile1 = inputFile1;
-        this.inputFile2 = inputFile2;
-    }
+    private String fileExtension;
+    private ArrayList<ArrayList<String>> deletedImages = new ArrayList<>();
 
 
     public void deleteSameImages() {
-        File dir = new File(inputFolder);
-        File[] files = dir.listFiles((d, name) -> name.endsWith(fileExtention));
+        File dir = new File(inputDirectory);
+        System.out.println(inputDirectory);
+        File[] files = dir.listFiles((d, name) -> name.endsWith(fileExtension));
 
         for (int i = 1; i < files.length; i++) {
             if(ImageCompare.compareWithBaseImage(files[i - 1], files[i])) {
+                deletedImages.add(new ArrayList<String>(Arrays.asList(removeExtensions(files[i - 1].getAbsolutePath()), removeExtensions(files[i].getAbsolutePath()))));
                 System.out.println((i -1 ) + " -> " +files[i - 1].getName() + " with " + i + " -> " +files[i].getName());
             }
         }
+
+        for (ArrayList<String> data: deletedImages) {
+            File file = new File(data.get(1));
+            if(!file.delete()){
+                System.out.println("Error file not deleted " + data.get(1));
+            }
+        }
+        createDataLog();
     }
 
+    public void compareImages() {
+        File dir = new File(inputDirectory);
+        File[] files = dir.listFiles((d, name) -> name.endsWith("." + fileExtension));
 
+        for (int i = 1; i < files.length; i++) {
+            if(ImageCompare.compareWithBaseImage(files[i - 1], files[i])) {
+                deletedImages.add(new ArrayList<String>(Arrays.asList(removeExtensions(files[i - 1].getAbsolutePath()), removeExtensions(files[i].getAbsolutePath()))));
+                System.out.println((i -1 ) + " -> " +files[i - 1].getName() + " with " + i + " -> " +files[i].getName());
+            }
+            createDataLog();
+        }
+    }
+
+    public boolean compare2Images() {
+        File file = new File(inputFile1);
+        File file2 = new File(inputFile2);
+
+        if(ImageCompare.compareWithBaseImage(file, file2)) {
+            return true;
+        }
+        return false;
+    }
+
+    private String removeExtensions(String string) {
+        return string.substring(0,string.length() - 4);
+    }
+
+    private void createDataLog() {
+        try {
+            BufferedWriter writer = null;
+
+            writer = new BufferedWriter(new FileWriter("data.txt"));
+
+            String text = "";
+            for (ArrayList<String> data: deletedImages) {
+                text += data.get(0) + " |->| " + data.get(1) + System.getProperty("line.separator");
+            }
+
+            writer.write(text);
+            writer.flush();
+            writer.close();
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void setInputDirectory(String inputDirectory) {
+        this.inputDirectory = inputDirectory + "\\";
+    }
+
+    public void setInputFile1(String inputFile1) {
+        this.inputFile1 = inputFile1;
+    }
+
+    public void setInputFile2(String inputFile2) {
+        this.inputFile2 = inputFile2;
+    }
+
+    public void setFileExtension(String fileExtension) {
+        this.fileExtension = fileExtension;
+    }
 }

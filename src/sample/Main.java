@@ -9,18 +9,14 @@ import views.Gui;
 public class Main extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage){
         Pane root = new Pane();
-        primaryStage.setScene(new Scene(root, 300, 275));
+        primaryStage.setScene(new Scene(root, 300, 400));
 
         new Gui(root);
 
         primaryStage.setTitle("Compare images");
         primaryStage.show();
-
-
-
-        new FileHandler("F:\\Java images test\\").deleteSameImages();
 
     }
 
