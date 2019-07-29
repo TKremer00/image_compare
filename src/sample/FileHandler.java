@@ -23,7 +23,7 @@ public class FileHandler {
 
         for (int i = 1; i < files.length; i++) {
             if(ImageCompare.compareWithBaseImage(files[i - 1], files[i])) {
-                deletedImages.add(new ArrayList<String>(Arrays.asList(removeExtensions(files[i - 1].getName()), removeExtensions(files[i].getName()))));
+                deletedImages.add(new ArrayList<>(Arrays.asList(removeExtensions(files[i - 1].getName()), removeExtensions(files[i].getName()))));
                 System.out.println((i -1 ) + " -> " +files[i - 1].getName() + " with " + i + " -> " +files[i].getName());
             }
         }
@@ -43,7 +43,7 @@ public class FileHandler {
 
         for (int i = 1; i < files.length; i++) {
             if(ImageCompare.compareWithBaseImage(files[i - 1], files[i])) {
-                deletedImages.add(new ArrayList<String>(Arrays.asList(removeExtensions(files[i - 1].getName()), removeExtensions(files[i].getName()))));
+                deletedImages.add(new ArrayList<>(Arrays.asList(removeExtensions(files[i - 1].getName()), removeExtensions(files[i].getName()))));
                 System.out.println((i -1 ) + " -> " +files[i - 1].getName() + " with " + i + " -> " +files[i].getName());
             }
             createDataLog();
@@ -54,10 +54,7 @@ public class FileHandler {
         File file = new File(inputFile1);
         File file2 = new File(inputFile2);
 
-        if(ImageCompare.compareWithBaseImage(file, file2)) {
-            return true;
-        }
-        return false;
+        return ImageCompare.compareWithBaseImage(file, file2);
     }
 
     private String removeExtensions(String string) {
@@ -66,13 +63,13 @@ public class FileHandler {
 
     private void createDataLog() {
         try {
-            BufferedWriter writer = null;
+            BufferedWriter writer;
 
             writer = new BufferedWriter(new FileWriter("data.txt"));
 
             String text = "";
             for (ArrayList<String> data: deletedImages) {
-                text += data.get(0) + "," + data.get(1) + "!" + System.getProperty("line.separator");
+                text += data.get(0) + "," + data.get(1) + ":" + System.getProperty("line.separator");
             }
 
             writer.write(text);
@@ -108,15 +105,17 @@ public class FileHandler {
             while ((currentLine = reader.readLine()) != null) {
                 data += currentLine;
             }
-        } catch (IOException ex) {}
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
 
 
-        // char to split first : |
+        // char to split first : :
         // char to split next : ,
         ArrayList<ArrayList<String>> dataList = new ArrayList<>();
-        for (String text :  data.split("!")) {
+        for (String text :  data.split(":")) {
             String[] textSplit = text.split(",");
-            dataList.add(new ArrayList<String>(Arrays.asList(textSplit[0],textSplit[1])));
+            dataList.add(new ArrayList<>(Arrays.asList(textSplit[0],textSplit[1])));
         }
 
         return dataList;

@@ -6,8 +6,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -15,13 +16,13 @@ import sample.FileHandler;
 
 import javax.swing.*;
 
-public class RestoreGui extends GridPane {
+public class RestoreGui extends Pane {
 
 
     private TextField dirString;
     private FileHandler fileHandler;
 
-    public RestoreGui() {
+    private RestoreGui() {
         fileHandler = new FileHandler();
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
@@ -31,15 +32,63 @@ public class RestoreGui extends GridPane {
 
         ObservableList<String> extensions = FXCollections.observableArrayList("png","jpg");
 
-        dirString = new TextField();
-        dirString.setMinSize(230,10);
-        dirString.setEditable(false);
-        this.add(dirString,0,0,4,1);
+        Text text = new Text("Input");
+        text.setX(10);
+        text.setY(15);
+        this.getChildren().add(text);
 
+        Line line = new Line();
+        line.setStartX(10);
+        line.setStartY(30);
+        line.setEndX(240);
+        line.setEndY(30);
+        this.getChildren().add(line);
+
+
+        dirString = new TextField();
+        dirString.setMinSize(220,10);
+        dirString.setEditable(false);
+        dirString.setTranslateX(20);
+        dirString.setTranslateY(40);
+        this.getChildren().add(dirString);
 
         Button btnOpen = new Button("Open dir");
-        this.add(btnOpen,0,1);
+        btnOpen.setTranslateX(178);
+        btnOpen.setTranslateY(70);
+        this.getChildren().add(btnOpen);
 
+
+        Text titleExtensions = new Text("Details");
+        titleExtensions.setX(10);
+        titleExtensions.setY(110);
+        this.getChildren().add(titleExtensions);
+
+        Line lineExtensions = new Line();
+        lineExtensions.setStartX(10);
+        lineExtensions.setStartY(125);
+        lineExtensions.setEndX(240);
+        lineExtensions.setEndY(125);
+        this.getChildren().add(lineExtensions);
+
+
+        ComboBox cbExtensions = new ComboBox();
+        cbExtensions.setItems(extensions);
+        cbExtensions.getSelectionModel().select(0);
+        cbExtensions.setTranslateX(20);
+        cbExtensions.setTranslateY(140);
+        this.getChildren().add(cbExtensions);
+
+        Button btnRun = new Button("Run");
+        btnRun.setTranslateX(203);
+        btnRun.setTranslateY(170);
+        this.getChildren().add(btnRun);
+
+
+
+
+
+
+/*
         ComboBox cbExtensions = new ComboBox();
         cbExtensions.setItems(extensions);
         cbExtensions.getSelectionModel().select(0);
@@ -47,7 +96,7 @@ public class RestoreGui extends GridPane {
 
         Button btnRun = new Button("Restore");
         this.add(btnRun,1,2);
-
+*/
         btnOpen.setOnAction(event -> {
             if (chooser.showOpenDialog(new JPanel()) == JFileChooser.APPROVE_OPTION) {
                 dirString.setText(chooser.getSelectedFile().getAbsoluteFile().getAbsolutePath());
