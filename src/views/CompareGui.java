@@ -47,7 +47,7 @@ public class CompareGui extends Pane {
         Line line = new Line();
         line.setStartX(10);
         line.setStartY(30);
-        line.setEndX(250);
+        line.setEndX(240);
         line.setEndY(30);
         p.getChildren().add(line);
 
@@ -73,20 +73,20 @@ public class CompareGui extends Pane {
         Line lineInput = new Line();
         lineInput.setStartX(10);
         lineInput.setStartY(90);
-        lineInput.setEndX(250);
+        lineInput.setEndX(240);
         lineInput.setEndY(90);
         p.getChildren().add(lineInput);
 
         Text titleExtensions = new Text("Details");
         titleExtensions.setX(10);
-        titleExtensions.setY(230);
+        titleExtensions.setY(220);
         p.getChildren().add(titleExtensions);
 
         Line lineExtensions = new Line();
         lineExtensions.setStartX(10);
-        lineExtensions.setStartY(245);
-        lineExtensions.setEndX(250);
-        lineExtensions.setEndY(245);
+        lineExtensions.setStartY(235);
+        lineExtensions.setEndX(240);
+        lineExtensions.setEndY(235);
         p.getChildren().add(lineExtensions);
 
 
@@ -94,12 +94,12 @@ public class CompareGui extends Pane {
         cbExtensions.setItems(extensions);
         cbExtensions.getSelectionModel().select(0);
         cbExtensions.setTranslateX(20);
-        cbExtensions.setTranslateY(255);
+        cbExtensions.setTranslateY(245);
         p.getChildren().add(cbExtensions);
 
         Button btnRun = new Button("Run");
-        btnRun.setTranslateX(215);
-        btnRun.setTranslateY(280);
+        btnRun.setTranslateX(203);
+        btnRun.setTranslateY(270);
         p.getChildren().add(btnRun);
 
         //Event listener Toggle group

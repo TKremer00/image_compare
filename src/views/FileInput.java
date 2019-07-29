@@ -19,7 +19,7 @@ public class FileInput extends GridPane {
         chooser.setAcceptAllFileFilterUsed(false);
 
         file1string = new TextField();
-        file1string.setMinSize(230,10);
+        file1string.setMinSize(220,10);
         file1string.setEditable(false);
         this.add(file1string,0,0,4,1);
 
@@ -27,7 +27,7 @@ public class FileInput extends GridPane {
         this.add(btnOpen,0,1);
 
         file2string = new TextField();
-        file2string.setMinSize(230,10);
+        file2string.setMinSize(220,10);
         file2string.setEditable(false);
         this.add(file2string,0,2,4,1);
 

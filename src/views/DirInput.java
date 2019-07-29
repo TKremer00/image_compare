@@ -23,7 +23,7 @@ public class DirInput extends GridPane {
 
 
         dirString = new TextField();
-        dirString.setMinSize(230,10);
+        dirString.setMinSize(220,10);
         dirString.setEditable(false);
         this.add(dirString,0,0,4,1);
 

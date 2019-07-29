@@ -1,9 +1,7 @@
 package views;
 
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 
 public class Gui {
 
@@ -12,11 +10,6 @@ public class Gui {
     private CompareGui compareGui;
 
     public Gui(Pane p) {
-        tp = new TabPane();
-        tp.setTabMinWidth(33);
-        tp.setTabMinHeight(33);
-        tp.setTabMaxWidth(69);
-        tp.setTabMaxHeight(69);
 
         compareGui = new CompareGui();
         restoreGui = new RestoreGui();
@@ -29,9 +22,16 @@ public class Gui {
         restore.setClosable(false);
         restore.setContent(restoreGui);
 
-
+        tp = new TabPane();
+        tp.setTabMinWidth(33);
+        tp.setTabMinHeight(33);
+        tp.setTabMaxWidth(69);
+        tp.setTabMaxHeight(69);
         tp.getTabs().add(compare);
         tp.getTabs().add(restore);
+        tp.setPrefWidth(250);
+        compare.getTabPane().setPrefHeight(1000);
+        restore.getTabPane().setPrefHeight(1000);
 
         p.getChildren().add(tp);
     }
