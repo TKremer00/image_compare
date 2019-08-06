@@ -8,10 +8,11 @@ import java.util.Arrays;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class FileHandler {
+public class FileHandler extends Thread {
 
     private String fileExtension;
     private ArrayList<ArrayList<String>> deletedImages = new ArrayList<>();
+    private File[] files;
 
     public boolean deleteSameImages(String inputDirectory) {
         // Delete images
@@ -26,13 +27,10 @@ public class FileHandler {
 
     public void compareImages(String inputDirectory) {
         File dir = new File(inputDirectory);
-        File[] files = dir.listFiles((d, name) -> name.endsWith("." + fileExtension));
+        files = dir.listFiles((d, name) -> name.endsWith("." + fileExtension));
 
-        for (int i = 1; i < files.length; i++) {
-            if(ImageCompare.compareImage(files[i - 1], files[i]))
-                deletedImages.add(new ArrayList<>(Arrays.asList(removeExtensions(files[i - 1].getName()), removeExtensions(files[i].getName()))));
-        }
-        createDataLog();
+        Thread thread = new Thread(this);
+        thread.start();
     }
 
     public boolean compare2Images(String inputFile1, String inputFile2) {
@@ -41,6 +39,19 @@ public class FileHandler {
 
         return ImageCompare.compareImage(file, file2);
     }
+
+    @Override
+    public void run() {
+        deletedImages = new ArrayList<>();
+
+        for (int i = 1; i < files.length; i++) {
+            if(ImageCompare.compareImage(files[i - 1], files[i]))
+                deletedImages.add(new ArrayList<>(Arrays.asList(removeExtensions(files[i - 1].getName()), removeExtensions(files[i].getName()))));
+        }
+
+        createDataLog();
+    }
+
 
     private String removeExtensions(String string) {
         return string.substring(0,string.length() - 4);
