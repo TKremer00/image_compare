@@ -40,7 +40,7 @@ public class InputGui extends Pane {
         p.getChildren().addAll(text,line,dirString,btnOpen);
 
         btnOpen.setOnAction(event -> {
-            if (chooser.showOpenDialog(new JPanel()) == JFileChooser.APPROVE_OPTION) {
+            if (chooser.showDialog(Popup.getDialog(),"Select") == JFileChooser.APPROVE_OPTION) {
                 dirString.setText(chooser.getSelectedFile().getAbsoluteFile().getAbsolutePath());
             }
         });

@@ -63,7 +63,6 @@ public class FileHandler extends Thread {
 
             writer = new BufferedWriter(new FileWriter("data.txt"));
             StringBuilder text = new StringBuilder();
-
             for (ArrayList<String> data: deletedImages) {
                 text.append(data.get(0) + "," + data.get(1) + ":" + System.getProperty("line.separator"));
             }
@@ -78,7 +77,7 @@ public class FileHandler extends Thread {
     }
 
     public void restoreImages(String dirFiles,String extension) {
-        ArrayList<ArrayList<String>> fileNames = readText("data.txt");
+        ArrayList<ArrayList<String>> fileNames = readText(System.getProperty("user.dir") + "\\data.txt");
 
         for (ArrayList<String> names : fileNames) {
             if(names.size() == 2) {

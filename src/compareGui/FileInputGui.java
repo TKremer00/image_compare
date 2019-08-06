@@ -52,14 +52,14 @@ public class FileInputGui extends Pane {
 
         btnOpen.setOnAction(event -> {
             chooser.setDialogTitle("Open image 1");
-            if (chooser.showOpenDialog(new JPanel()) == JFileChooser.APPROVE_OPTION) {
+            if (chooser.showDialog(Popup.getDialog(),"Select") == JFileChooser.APPROVE_OPTION) {
                 file1string.setText(chooser.getSelectedFile().getAbsoluteFile().getAbsolutePath());
             }
         });
 
         btnOpen2.setOnAction(event -> {
             chooser.setDialogTitle("Open image 2");
-            if (chooser.showOpenDialog(new JPanel()) == JFileChooser.APPROVE_OPTION) {
+            if (chooser.showDialog(Popup.getDialog(),"Select") == JFileChooser.APPROVE_OPTION) {
                 file2string.setText(chooser.getSelectedFile().getAbsoluteFile().getAbsolutePath());
             }
         });

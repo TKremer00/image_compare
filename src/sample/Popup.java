@@ -7,6 +7,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class Popup {
 
@@ -21,12 +22,22 @@ public class Popup {
     }
 
     public static JFileChooser inputSelect(String title,int selectionModel) {
+
+
         JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new java.io.File("."));
+        chooser.setCurrentDirectory(new java.io.File(System.getProperty("user.home")));
         chooser.setFileSelectionMode(selectionModel);
         chooser.setDialogTitle(title);
         chooser.setAcceptAllFileFilterUsed(false);
+
         return chooser;
+    }
+
+    public static JDialog getDialog() {
+        JDialog dialog = new JDialog();
+        dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setAlwaysOnTop(true);
+        return dialog;
     }
 
 }

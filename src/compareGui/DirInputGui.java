@@ -47,7 +47,7 @@ public class DirInputGui extends Pane {
         p.getChildren().addAll(titleInput,lineInput,dirString,btnOpen,rbDeleteDoubles);
 
         btnOpen.setOnAction(event -> {
-            if (chooser.showOpenDialog(new JPanel()) == JFileChooser.APPROVE_OPTION) {
+            if (chooser.showDialog(Popup.getDialog(),"Select") == JFileChooser.APPROVE_OPTION) {
                 dirString.setText(chooser.getSelectedFile().getAbsoluteFile().getAbsolutePath());
             }
         });
