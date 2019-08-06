@@ -12,6 +12,8 @@ public class InputMethodGui extends Pane {
     private final RadioButton rbDir,rbFile;
 
     public InputMethodGui() {
+        Pane p = this;
+
         selectInput = new ToggleGroup();
 
         Text text = new Text("Input method");
@@ -35,7 +37,7 @@ public class InputMethodGui extends Pane {
         rbFile.setTranslateX(110);
         rbFile.setTranslateY(40);
 
-        this.getChildren().addAll(text,line,rbDir,rbFile);
+        p.getChildren().addAll(text,line,rbDir,rbFile);
     }
 
     public RadioButton getRbDir() {

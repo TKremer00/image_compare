@@ -1,4 +1,4 @@
-package compareGui;
+package restoreGui;
 
 import javafx.collections.FXCollections;
 import javafx.scene.control.ComboBox;
@@ -27,7 +27,7 @@ public class DetailsGui extends Pane {
         cbExtensions.setItems(FXCollections.observableArrayList("png","jpg"));
         cbExtensions.getSelectionModel().select(0);
         cbExtensions.setTranslateX(20);
-        cbExtensions.setTranslateY(35);
+        cbExtensions.setTranslateY(40);
 
         p.getChildren().addAll(titleExtensions,lineExtensions,cbExtensions);
     }
