@@ -67,6 +67,8 @@ public class FileHandler extends Thread {
                 text.append(data.get(0) + "," + data.get(1) + ":" + System.getProperty("line.separator"));
             }
 
+            Runtime.getRuntime().exec("explorer.exe /select, " + System.getProperty("user.dir") + "\\data.txt");
+
             writer.write(text.toString());
             writer.flush();
             writer.close();

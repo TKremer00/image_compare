@@ -10,7 +10,7 @@ import javafx.scene.layout.GridPane;
 import sample.FileHandler;
 import sample.Popup;
 
-public class CompareGui extends GridPane {
+class CompareGui extends GridPane {
 
 
     private FileHandler fileHandler;
@@ -21,7 +21,7 @@ public class CompareGui extends GridPane {
 
     private InputMethodGui inputMethodGui;
 
-    public CompareGui() {
+    CompareGui() {
         GridPane p = this;
         p.setHgap(10);
 
@@ -77,9 +77,7 @@ public class CompareGui extends GridPane {
                 message = "Done open txt to see";
 
                 if(dirInputGui.getRbDelete()) {
-                    if(!fileHandler.deleteSameImages(dirInputGui.getDirString())) {
-                        message = "Deleting images failed";
-                    }
+                    message = (fileHandler.deleteSameImages(dirInputGui.getDirString()) ? "Double images removed" : "Deleting images failed");
                 }
             }
 
