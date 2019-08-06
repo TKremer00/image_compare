@@ -6,10 +6,11 @@ import java.io.File;
 
 public class ImageCompare {
 
-    public static boolean compareWithBaseImage(File baseImage, File compareImage) {
+    public static boolean compareImage(File baseImage, File compareImage) {
 
         BufferedImage bImage;
         BufferedImage cImage;
+
         try {
             bImage = ImageIO.read(baseImage);
             cImage = ImageIO.read(compareImage);
@@ -18,24 +19,19 @@ public class ImageCompare {
             return false;
         }
 
-        int height = bImage.getHeight();
-        int width = bImage.getWidth();
+        if(bImage.getHeight() != cImage.getHeight() || bImage.getWidth() != cImage.getWidth()) {
+            return false;
+        }
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                try {
-                    int pixelC = cImage.getRGB(x, y);
-                    int pixelB = bImage.getRGB(x, y);
-                    if (pixelB != pixelC ) {
-                        return false;
-                    }
-                } catch (Exception e) {
-                    // handled height or width mismatch
-                    System.out.println(e.getMessage());
+        //Check every pixel
+        for (int y = 0; y < bImage.getHeight(); y++) {
+            for (int x = 0; x < bImage.getWidth(); x++) {
+                if (cImage.getRGB(x, y) != bImage.getRGB(x, y) )
                     return false;
-                }
             }
         }
+
+        // If all checks out then the images is the same
         return true;
     }
 }

@@ -15,6 +15,8 @@ import javafx.stage.Stage;
 import sample.FileHandler;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class RestoreGui extends Pane {
 
@@ -22,7 +24,7 @@ public class RestoreGui extends Pane {
     private TextField dirString;
     private FileHandler fileHandler;
 
-    private RestoreGui() {
+    public RestoreGui() {
         fileHandler = new FileHandler();
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
@@ -58,7 +60,7 @@ public class RestoreGui extends Pane {
         this.getChildren().add(btnOpen);
 
 
-        Text titleExtensions = new Text("Details");
+        Text titleExtensions = new Text("DetailsGui");
         titleExtensions.setX(10);
         titleExtensions.setY(110);
         this.getChildren().add(titleExtensions);
@@ -84,19 +86,6 @@ public class RestoreGui extends Pane {
         this.getChildren().add(btnRun);
 
 
-
-
-
-
-/*
-        ComboBox cbExtensions = new ComboBox();
-        cbExtensions.setItems(extensions);
-        cbExtensions.getSelectionModel().select(0);
-        this.add(cbExtensions,0,2);
-
-        Button btnRun = new Button("Restore");
-        this.add(btnRun,1,2);
-*/
         btnOpen.setOnAction(event -> {
             if (chooser.showOpenDialog(new JPanel()) == JFileChooser.APPROVE_OPTION) {
                 dirString.setText(chooser.getSelectedFile().getAbsoluteFile().getAbsolutePath());

@@ -10,51 +10,36 @@ import java.nio.file.Paths;
 
 public class FileHandler {
 
-    private String inputDirectory;
-    private String inputFile1,inputFile2;
     private String fileExtension;
     private ArrayList<ArrayList<String>> deletedImages = new ArrayList<>();
 
-
-    public void deleteSameImages() {
-        File dir = new File(inputDirectory);
-        System.out.println(inputDirectory);
-        File[] files = dir.listFiles((d, name) -> name.endsWith(fileExtension));
-
-        for (int i = 1; i < files.length; i++) {
-            if(ImageCompare.compareWithBaseImage(files[i - 1], files[i])) {
-                deletedImages.add(new ArrayList<>(Arrays.asList(removeExtensions(files[i - 1].getName()), removeExtensions(files[i].getName()))));
-                System.out.println((i -1 ) + " -> " +files[i - 1].getName() + " with " + i + " -> " +files[i].getName());
-            }
-        }
-
+    public boolean deleteSameImages(String inputDirectory) {
+        // Delete images
         for (ArrayList<String> data: deletedImages) {
             File file = new File(inputDirectory + data.get(1) + "." + fileExtension);
-            if(!file.delete()){
-                System.out.println("Error file not deleted " + data.get(1));
+            if(!file.delete()) {
+                return false;
             }
         }
-        createDataLog();
+        return true;
     }
 
-    public void compareImages() {
+    public void compareImages(String inputDirectory) {
         File dir = new File(inputDirectory);
         File[] files = dir.listFiles((d, name) -> name.endsWith("." + fileExtension));
 
         for (int i = 1; i < files.length; i++) {
-            if(ImageCompare.compareWithBaseImage(files[i - 1], files[i])) {
+            if(ImageCompare.compareImage(files[i - 1], files[i]))
                 deletedImages.add(new ArrayList<>(Arrays.asList(removeExtensions(files[i - 1].getName()), removeExtensions(files[i].getName()))));
-                System.out.println((i -1 ) + " -> " +files[i - 1].getName() + " with " + i + " -> " +files[i].getName());
-            }
-            createDataLog();
         }
+        createDataLog();
     }
 
-    public boolean compare2Images() {
+    public boolean compare2Images(String inputFile1, String inputFile2) {
         File file = new File(inputFile1);
         File file2 = new File(inputFile2);
 
-        return ImageCompare.compareWithBaseImage(file, file2);
+        return ImageCompare.compareImage(file, file2);
     }
 
     private String removeExtensions(String string) {
@@ -66,32 +51,33 @@ public class FileHandler {
             BufferedWriter writer;
 
             writer = new BufferedWriter(new FileWriter("data.txt"));
+            StringBuilder text = new StringBuilder();
 
-            String text = "";
             for (ArrayList<String> data: deletedImages) {
-                text += data.get(0) + "," + data.get(1) + ":" + System.getProperty("line.separator");
+                text.append(data.get(0) + "," + data.get(1) + ":" + System.getProperty("line.separator"));
             }
 
-            writer.write(text);
+            writer.write(text.toString());
             writer.flush();
             writer.close();
 
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
     public void restoreImages(String dirFiles,String extension) {
         ArrayList<ArrayList<String>> fileNames = readText("data.txt");
-        for (ArrayList<String> names:  fileNames) {
 
+        for (ArrayList<String> names : fileNames) {
             if(names.size() == 2) {
                 try {
-                    Files.copy(Paths.get(dirFiles + "\\" + names.get(0) + "." + extension),Paths.get(dirFiles + "\\" + names.get(1) + "." + extension), StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(
+                            Paths.get(dirFiles + "\\" + names.get(0) + "." + extension),
+                            Paths.get(dirFiles + "\\" + names.get(1) + "." + extension),
+                            StandardCopyOption.COPY_ATTRIBUTES);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    System.out.println("ERROR");
-                    System.out.println(e.getMessage());
                 }
             }
         }
@@ -99,38 +85,25 @@ public class FileHandler {
     }
 
     private ArrayList<ArrayList<String>> readText(String file)  {
-        String data = "";
+        StringBuilder data = new StringBuilder();
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(file), Charset.forName("UTF-8"))) {
             String currentLine;
             while ((currentLine = reader.readLine()) != null) {
-                data += currentLine;
+                data.append(currentLine);
             }
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
-
         // char to split first : :
         // char to split next : ,
         ArrayList<ArrayList<String>> dataList = new ArrayList<>();
-        for (String text :  data.split(":")) {
+        for (String text :  data.toString().split(":")) {
             String[] textSplit = text.split(",");
             dataList.add(new ArrayList<>(Arrays.asList(textSplit[0],textSplit[1])));
         }
 
         return dataList;
-    }
-
-    public void setInputDirectory(String inputDirectory) {
-        this.inputDirectory = inputDirectory + "\\";
-    }
-
-    public void setInputFile1(String inputFile1) {
-        this.inputFile1 = inputFile1;
-    }
-
-    public void setInputFile2(String inputFile2) {
-        this.inputFile2 = inputFile2;
     }
 
     public void setFileExtension(String fileExtension) {

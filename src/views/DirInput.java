@@ -42,7 +42,7 @@ public class DirInput extends GridPane {
     }
 
     public String getDirString() {
-        return dirString.getText();
+        return dirString.getText() + "\\";
     }
 
     public boolean getRbDelete() {
