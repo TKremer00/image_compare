@@ -46,7 +46,7 @@ class RestoreGui extends GridPane {
                 message = "No directory specified";
             }
 
-            Popup.popup(message).show();
+            Popup.popup(message);
         });
 
     }
