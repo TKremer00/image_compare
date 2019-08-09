@@ -6,7 +6,9 @@ import compareGui.FileInputGui;
 import compareGui.InputMethodGui;
 import javafx.geometry.HPos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Text;
 import sample.FileHandler;
 import sample.Popup;
 
@@ -20,6 +22,8 @@ class CompareGui extends GridPane {
     private DetailsGui detailsGui;
 
     private InputMethodGui inputMethodGui;
+
+    private ProgressBar progressBar;
 
     CompareGui() {
         GridPane p = this;
@@ -49,7 +53,16 @@ class CompareGui extends GridPane {
         Button btnRun = new Button("Run");
         p.add(btnRun,0,3);
 
+        //Spacing
+        p.add(new Text(" "),0,4);
+
+        progressBar = new ProgressBar(0);
+        progressBar.setTranslateX(5);
+        progressBar.setMaxWidth(230);
+        p.add(progressBar,0,5);
+
         setHalignment(btnRun, HPos.RIGHT);
+        setHalignment(progressBar,HPos.CENTER);
 
         //Event listener Toggle group*/
         inputMethodGui.getSelectInput().selectedToggleProperty().addListener(event -> {
@@ -67,21 +80,32 @@ class CompareGui extends GridPane {
         btnRun.setOnAction(event -> {
 
             fileHandler.setFileExtension(detailsGui.getSelectedItem());
-            String message = "Something went wrong";
+            String message;
 
             if(inputMethodGui.getRbFile().isSelected()) {
                 message = (fileHandler.compare2Images(fileInputGui.getFile1String(),fileInputGui.getFile2String()) ? "Images are the same" : "Images aren't the same");
+                Popup.popup(message);
 
-            }else if (inputMethodGui.getRbDir().isSelected()) {
+            } else if (inputMethodGui.getRbDir().isSelected()) {
                 fileHandler.compareImages(dirInputGui.getDirString());
-                message = "Done open txt to see";
 
-                if(dirInputGui.getRbDelete()) {
-                    message = (fileHandler.deleteSameImages(dirInputGui.getDirString()) ? "Double images removed" : "Deleting images failed");
-                }
+                // When boolean finished is true check if deleted is checked
+                fileHandler.finishedCompareProperty().addListener((observableMain, oldValueMain, newValueMain) -> {
+                    if(newValueMain) {
+                        String text = "Done checking images open txt to see";
+                        if(dirInputGui.getRbDelete()) {
+                            text = (fileHandler.deleteSameImages(dirInputGui.getDirString()) ? "Double images removed" : "Deleting images failed");
+                        }
+                        Popup.popup(text);
+                    }
+                });
             }
+        });
 
-            Popup.popup(message).show();
+        //Set progress bar
+        fileHandler.progressProperty().addListener((observable, oldValue, newValue) -> {
+            double value = newValue.doubleValue();
+            progressBar.setProgress((value == fileHandler.getTotalImages() - 1) ? 1 : ((1 / (float)fileHandler.getTotalImages()) * value));
         });
     }
 }

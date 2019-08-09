@@ -1,5 +1,6 @@
 package sample;
 
+import javafx.beans.property.*;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.StandardCopyOption;
@@ -11,16 +12,25 @@ import java.nio.file.Paths;
 public class FileHandler extends Thread {
 
     private String fileExtension;
-    private ArrayList<ArrayList<String>> deletedImages = new ArrayList<>();
+    private ArrayList<ArrayList<String>> deletedImages;
     private File[] files;
+    private BooleanProperty finishedCompare;
+    private DoubleProperty progress;
+    private int totalImages;
+
+    public FileHandler() {
+        deletedImages = new ArrayList<>();
+        finishedCompare = new SimpleBooleanProperty(false);
+        progress = new SimpleDoubleProperty(0);
+    }
+
 
     public boolean deleteSameImages(String inputDirectory) {
         // Delete images
         for (ArrayList<String> data: deletedImages) {
             File file = new File(inputDirectory + data.get(1) + "." + fileExtension);
-            if(!file.delete()) {
+            if(!file.delete())
                 return false;
-            }
         }
         return true;
     }
@@ -28,6 +38,7 @@ public class FileHandler extends Thread {
     public void compareImages(String inputDirectory) {
         File dir = new File(inputDirectory);
         files = dir.listFiles((d, name) -> name.endsWith("." + fileExtension));
+        totalImages = (files != null ? files.length : 0 );
 
         Thread thread = new Thread(this);
         thread.start();
@@ -47,8 +58,10 @@ public class FileHandler extends Thread {
         for (int i = 1; i < files.length; i++) {
             if(ImageCompare.compareImage(files[i - 1], files[i]))
                 deletedImages.add(new ArrayList<>(Arrays.asList(removeExtensions(files[i - 1].getName()), removeExtensions(files[i].getName()))));
+            progress.set(progress.get() + 1);
         }
 
+        finishedCompare.set(true);
         createDataLog();
     }
 
@@ -120,5 +133,17 @@ public class FileHandler extends Thread {
 
     public void setFileExtension(String fileExtension) {
         this.fileExtension = fileExtension;
+    }
+
+    public BooleanProperty finishedCompareProperty() {
+        return finishedCompare;
+    }
+
+    public DoubleProperty progressProperty() {
+        return progress;
+    }
+
+    public int getTotalImages() {
+        return totalImages;
     }
 }
