@@ -14,7 +14,6 @@ import sample.Popup;
 
 class CompareGui extends GridPane {
 
-
     private FileHandler fileHandler;
 
     private DirInputGui dirInputGui;
@@ -35,7 +34,7 @@ class CompareGui extends GridPane {
         inputMethodGui.setPrefHeight(80);
 
         dirInputGui = new DirInputGui();
-        dirInputGui.setPrefHeight(135);
+        dirInputGui.setPrefHeight(dirInputGui.getSize());
 
         fileInputGui = new FileInputGui();
         fileInputGui.setPrefHeight(165);
@@ -69,8 +68,6 @@ class CompareGui extends GridPane {
             if(inputMethodGui.getRbDir().isSelected()){
                 p.getChildren().remove(fileInputGui);
                 p.add(dirInputGui,0,1);
-
-
             }else if(inputMethodGui.getRbFile().isSelected()) {
                 p.getChildren().remove(dirInputGui);
                 p.add(fileInputGui,0,1);
@@ -87,7 +84,7 @@ class CompareGui extends GridPane {
                 Popup.popup(message);
 
             } else if (inputMethodGui.getRbDir().isSelected()) {
-                fileHandler.compareImages(dirInputGui.getDirString());
+                fileHandler.compareImages(dirInputGui.getDirString(), dirInputGui.getMethod());
 
                 // When boolean finished is true check if deleted is checked
                 fileHandler.finishedCompareProperty().addListener((observableMain, oldValueMain, newValueMain) -> {
