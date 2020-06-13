@@ -7,7 +7,7 @@ public class Gui {
 
     private TabPane tp;
     private RestoreGui restoreGui;
-    private CompareGui compareGui;
+    public static CompareGui compareGui;
 
     public Gui(Pane p) {
 

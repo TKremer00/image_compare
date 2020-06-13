@@ -4,6 +4,9 @@ import compareGui.DetailsGui;
 import compareGui.DirInputGui;
 import compareGui.FileInputGui;
 import compareGui.InputMethodGui;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.HPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
@@ -14,7 +17,7 @@ import javafx.scene.text.Text;
 import sample.FileHandler;
 import sample.Popup;
 
-class CompareGui extends GridPane {
+public class CompareGui extends GridPane {
 
     private FileHandler fileHandler;
 
@@ -22,6 +25,7 @@ class CompareGui extends GridPane {
     private FileInputGui fileInputGui;
     private DetailsGui detailsGui;
     private InputMethodGui inputMethodGui;
+    public static StringProperty log = new SimpleStringProperty();
 
     private ProgressBar progressBar;
     private TextArea output;
@@ -50,7 +54,7 @@ class CompareGui extends GridPane {
         output.setPrefWidth(500);
         output.setEditable(true);
         output.setFont(new Font(14));
-        output.textProperty().bind(FileHandler.log);
+        //output.textProperty().bind(FileHandler.log);
 
         p.add(output,1,0,1,5);
         p.add(inputMethodGui,0,0);
@@ -114,5 +118,9 @@ class CompareGui extends GridPane {
             double value = newValue.doubleValue();
             progressBar.setProgress((value == fileHandler.getTotalImages() - 1) ? 1 : ((1 / (float)fileHandler.getTotalImages()) * value));
         });
+    }
+
+    public void AddToLog(String text){
+        Platform.runLater(() -> output.setText(text + "\n" + output.getText()));
     }
 }
