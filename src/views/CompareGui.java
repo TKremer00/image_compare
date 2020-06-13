@@ -7,7 +7,9 @@ import compareGui.InputMethodGui;
 import javafx.geometry.HPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import sample.FileHandler;
 import sample.Popup;
@@ -19,10 +21,10 @@ class CompareGui extends GridPane {
     private DirInputGui dirInputGui;
     private FileInputGui fileInputGui;
     private DetailsGui detailsGui;
-
     private InputMethodGui inputMethodGui;
 
     private ProgressBar progressBar;
+    private TextArea output;
 
     CompareGui() {
         GridPane p = this;
@@ -32,6 +34,7 @@ class CompareGui extends GridPane {
 
         inputMethodGui = new InputMethodGui();
         inputMethodGui.setPrefHeight(80);
+        inputMethodGui.setMinWidth(250);
 
         dirInputGui = new DirInputGui();
         dirInputGui.setPrefHeight(dirInputGui.getSize());
@@ -42,8 +45,15 @@ class CompareGui extends GridPane {
         detailsGui = new DetailsGui();
         detailsGui.setPrefHeight(70);
 
-        p.add(inputMethodGui,0,0);
+        output = new TextArea();
+        output.setPrefHeight(200);
+        output.setPrefWidth(500);
+        output.setEditable(true);
+        output.setFont(new Font(14));
+        output.textProperty().bind(FileHandler.log);
 
+        p.add(output,1,0,1,5);
+        p.add(inputMethodGui,0,0);
 
         p.add(dirInputGui,0,1);
 

@@ -11,7 +11,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage){
         Pane root = new Pane();
-        primaryStage.setScene(new Scene(root, 251, 400));
+        primaryStage.setScene(new Scene(root, 251, 450));
 
         new Gui(root);
 

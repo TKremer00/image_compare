@@ -29,7 +29,8 @@ public class Gui {
         tp.setTabMaxHeight(69);
         tp.getTabs().add(compare);
         tp.getTabs().add(restore);
-        tp.setPrefWidth(250);
+        //tp.setPrefWidth(250);
+        tp.setMinWidth(750);
         compare.getTabPane().setPrefHeight(500);
         restore.getTabPane().setPrefHeight(500);
 
