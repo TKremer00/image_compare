@@ -17,7 +17,7 @@ public class Main extends Application {
 
         primaryStage.setTitle("Compare images");
         primaryStage.show();
-
+        primaryStage.setOnHiding( event -> {System.exit(0);} );
     }
 
     public static void main(String[] args) {

@@ -39,6 +39,7 @@ public class FileHandler extends Thread {
 
     public boolean deleteSameImages(String inputDirectory) {
         // Delete images
+        ArrayList<ArrayList<String>> deletedImages = CheckedFiles.getDoubles();
         for (ArrayList<String> data: deletedImages) {
             File file = new File(inputDirectory + data.get(1) + "." + fileExtension);
             if(!file.delete())
@@ -95,6 +96,11 @@ public class FileHandler extends Thread {
                 if(CheckedFiles.writing){
                     while (CheckedFiles.writing){
                         // block the thread
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException ex) {
+                            System.out.println(ex.getMessage());
+                        }
                     }
                 }
                 CheckedFiles.addToListDouble(new ArrayList<>(Arrays.asList(removeExtensions(files.get(i+1).getName()), removeExtensions(files.get(i).getName()))));
@@ -108,8 +114,7 @@ public class FileHandler extends Thread {
             progress.set(progress.get() + 1);
 
             long end = System.nanoTime();
-
-            String text = files.get(i + 1).getName() + " - "+ ((end - start) / 1000000);
+            String text = files.get(i + 1).getName() + " - "+ ((end - start) / 1000000) + "ms";
             Gui.compareGui.AddToLog(text);
         }
         threadCount--;
