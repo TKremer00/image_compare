@@ -1,69 +1,58 @@
-use crate::hasher::{hash_reader, hash_one_part};
-use data_encoding::HEXUPPER;
+use crate::hasher::{hash_one_part, default_hasher};
 use std::fs::File;
 use std::io::{BufReader, Result};
-use std::borrow::Cow;
 use std::hash::{Hash, Hasher};
-use std::cmp::{Ordering, PartialEq};
+use std::cmp::PartialEq;
 
 
-#[derive(Debug, Ord)]
-pub struct Image<'a> {
-    pub hash: Option<Cow<'a, str>>,
-    pub partial_hash: Cow<'a, str>,
+#[derive(Debug)]
+pub struct Image {
+    pub hash: Option<u64>,
+    pub partial_hash: u64,
     pub path: String
 }
 
-impl<'a> Image<'a> {
-    pub fn new(path: String) -> Result<Image<'a>> {    
+impl Image {
+    pub fn new(path: String) -> Result<Image> {    
         Ok(Image {
             hash: None,
-            partial_hash: Cow::from(Image::read_part(path.clone())?),
+            partial_hash: Image::read_part(path.clone())?,
             path: path
         })
     }
     
-    fn read_part(path: String) -> Result<String> {
+    fn read_part(path: String) -> Result<u64> {
         let input = File::open(path)?;
         let reader = BufReader::new(input);
-        let digest = hash_one_part(reader)?;
-        Ok(HEXUPPER.encode(digest.as_ref()))
+        Ok(hash_one_part(reader)?)
     }
     
     pub fn read_complete_hash(&mut self) -> Result<()> {
         if let Some(_) = &self.hash {
             return Ok(());
         }
-        self.hash = Some(Cow::from(Image::read(self.path.clone())?));
+        self.hash = Some(Image::read(self.path.clone())?);
         Ok(())
     }
     
-    fn read(path: String) -> Result<String> {
+    
+    fn read(path: String) -> Result<u64> {
         let input = File::open(path)?;
         let reader = BufReader::new(input);
-        let digest = hash_reader(reader)?;
-        Ok(HEXUPPER.encode(digest.as_ref()))
+        Ok(default_hasher(reader)?)
     }    
 }
 
-impl Hash for Image<'_> {
+impl Hash for Image {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.hash.hash(state);
     }
 }
 
-impl<'a> Eq for Image<'a> {}
+impl Eq for Image {}
 
-impl<'a> PartialEq for Image<'a> {
+impl PartialEq for Image {
     fn eq(&self, other: &Self) -> bool {
         self.hash == other.hash
     }
 }
-
-impl<'a> PartialOrd for Image<'a> {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-

@@ -1,26 +1,30 @@
 use std::io::{Read, Result};
-use md5::{compute, Context, Digest};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hasher;
 
-pub fn hash_reader<R: Read>(mut reader: R) -> Result<Digest> {
-    let mut context = Context::new();
+pub fn default_hasher<R: Read>(mut reader: R) -> Result<u64> {
+    let mut hasher = DefaultHasher::new();
     let mut buffer = [0; 2024];
-
+    
     loop {
         let count = read_buffer(&mut buffer, &mut reader)?;
         
         if count == 0 {
             break;
         }
-        context.consume(&buffer[..count]);
+        hasher.write(&buffer[..count]);
     }
-    Ok(context.compute())
+    
+    Ok(hasher.finish())
 }
 
-pub fn hash_one_part<R: Read>(mut reader: R) -> Result<Digest> {
+pub fn hash_one_part<R: Read>(mut reader: R) -> Result<u64> {
+    let mut hasher = DefaultHasher::new();
     let mut buffer = [0; 2024];
-
-    let _ = read_buffer(&mut buffer, &mut reader)?;
-    Ok(compute(buffer))
+    
+    let count = read_buffer(&mut buffer, &mut reader)?;
+    hasher.write(&buffer[..count]);
+    Ok(hasher.finish())
 }
 
 fn read_buffer<R: Read>(buf: &mut [u8], reader: &mut R) -> Result<usize> {

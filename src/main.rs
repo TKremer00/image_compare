@@ -1,5 +1,4 @@
 use std::fs::read_dir;
-use std::borrow::Cow;
 use std::io::Result;
 use std::collections::HashMap;
 use std::time::SystemTime;
@@ -19,7 +18,7 @@ fn main() -> Result<()> {
 }
 
 fn dir_to_images(path: &str) -> HashMap<Image, Vec<Image>> {
-    let mut images: HashMap<Cow<str>, (Image, Vec<Image>)> = HashMap::new();
+    let mut images: HashMap<u64, (Image, Vec<Image>)> = HashMap::new();
     let paths = read_dir(path).unwrap();
     let mut images_done = 0;
     let last_time = SystemTime::now();
@@ -48,13 +47,14 @@ fn dir_to_images(path: &str) -> HashMap<Image, Vec<Image>> {
     duplicates
 }
 
-fn proccess_image(path : String, images: &mut HashMap<Cow<str>, (Image, Vec<Image>)>) {
+fn proccess_image(path : String, images: &mut HashMap<u64, (Image, Vec<Image>)>) {
     let mut image = Image::new(path).unwrap();
 
     if images.contains_key(&image.partial_hash) {
         let entry = if let Some(entry) = images.get_mut(&image.partial_hash) { entry } else { panic!("no entry"); };
         let _ = entry.0.read_complete_hash();
-        let _ = image.read_complete_hash(); 
+        let _ = image.read_complete_hash();
+
         if entry.0.hash == image.hash {
             entry.1.push(image);
         }
