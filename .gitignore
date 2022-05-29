@@ -1,1 +1,6 @@
 /target
+.svg
+perf.*
+*.csv
+resources/*
+resources_old/*
