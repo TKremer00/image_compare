@@ -1,10 +1,10 @@
 use crate::image::Image;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::Result;
 
-pub fn write_csv(duplicates: BTreeMap<Image, Vec<Image>>) -> Result<()> {
+pub fn write_csv(duplicates: HashMap<Image, Vec<Image>>) -> Result<()> {
     let mut f = File::create("duplicates.csv")?;
     f.write(b"root*duplicates\n")?;
     for (k, v) in duplicates {
