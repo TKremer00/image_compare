@@ -2,6 +2,7 @@ use std::fs::read_dir;
 use std::io::Result;
 use std::collections::HashMap;
 use std::time::SystemTime;
+use clap::Parser;
 
 mod image;
 mod hasher;
@@ -9,8 +10,19 @@ mod csv;
 
 use image::Image;
 
+#[derive(Parser, Debug)]
+#[clap(author, version)]
+struct Args {
+    /// Path to the folder
+    #[clap(short, long)]
+    path : String,
+}
+
+
 fn main() -> Result<()> {
-    let path = "/home/tim/Documents/code/image_compare/resources/";
+    let args = Args::parse();
+    
+    let path = &args.path;
     let resp = dir_to_images(path);
     let _ = csv::write_csv(resp);       
     
