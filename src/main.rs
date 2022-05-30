@@ -47,7 +47,7 @@ fn dir_to_images(path: &str) -> HashMap<Image, Vec<Image>> {
     duplicates
 }
 
-fn proccess_image(path : &str, images: &mut HashMap<u64, (Image, Vec<Image>)>) {
+fn proccess_image(path: &str, images: &mut HashMap<u64, (Image, Vec<Image>)>) {
     let mut image = Image::new(path).unwrap();
 
     if images.contains_key(&image.partial_hash) {
@@ -59,10 +59,9 @@ fn proccess_image(path : &str, images: &mut HashMap<u64, (Image, Vec<Image>)>) {
             entry.1.push(image);
         }
     } else {
-        images.insert(image.partial_hash.clone(), (image, Vec::default()));
+        images.insert(image.partial_hash, (image, Vec::default()));
     }
 }
-
 
 #[cfg(test)]
 mod tests {

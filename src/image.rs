@@ -4,7 +4,6 @@ use std::io::{BufReader, Result};
 use std::hash::{Hash, Hasher};
 use std::cmp::PartialEq;
 
-
 #[derive(Debug)]
 pub struct Image {
     pub hash: Option<u64>,
@@ -17,7 +16,7 @@ impl Image {
         Ok(Image {
             hash: None,
             partial_hash: Image::read_part(path)?,
-            path: path.to_string()
+            path: String::from(path)
         })
     }
     
@@ -34,7 +33,6 @@ impl Image {
         self.hash = Some(Image::read(&self.path)?);
         Ok(())
     }
-    
     
     fn read(path: &str) -> Result<u64> {
         let input = File::open(path)?;
