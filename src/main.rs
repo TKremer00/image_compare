@@ -25,7 +25,7 @@ fn dir_to_images(path: &str) -> HashMap<Image, Vec<Image>> {
     for path in paths {
         match path.unwrap().path().to_str() {
             Some(str_path) => {
-                proccess_image(str_path.to_string(), &mut images);
+                proccess_image(str_path, &mut images);
                 if images_done % 25 == 0 {
                     println!("{} - {}", images_done, last_time.elapsed().unwrap().as_secs());
                 }
@@ -47,7 +47,7 @@ fn dir_to_images(path: &str) -> HashMap<Image, Vec<Image>> {
     duplicates
 }
 
-fn proccess_image(path : String, images: &mut HashMap<u64, (Image, Vec<Image>)>) {
+fn proccess_image(path : &str, images: &mut HashMap<u64, (Image, Vec<Image>)>) {
     let mut image = Image::new(path).unwrap();
 
     if images.contains_key(&image.partial_hash) {
@@ -60,5 +60,38 @@ fn proccess_image(path : String, images: &mut HashMap<u64, (Image, Vec<Image>)>)
         }
     } else {
         images.insert(image.partial_hash.clone(), (image, Vec::default()));
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn all_match() {
+        let path = "./test_files/all_match/";
+        let resp = dir_to_images(path);
+        assert!(!resp.is_empty());
+        assert_eq!(resp.len(), 1);
+        for (_, v) in resp {
+            assert_eq!(v.len(), 4);
+        }
+    }
+    
+    #[test]
+    fn no_match() {
+        let path = "./test_files/no_match/";
+        let resp = dir_to_images(path);
+        assert!(resp.is_empty());
+        assert_eq!(resp.len(), 0);
+    }
+
+    #[test]
+    fn pixel_diff() {
+        let path = "./test_files/pixel_diff/";
+        let resp = dir_to_images(path);
+        assert!(resp.is_empty());
+        assert_eq!(resp.len(), 0);
     }
 }

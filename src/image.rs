@@ -13,15 +13,15 @@ pub struct Image {
 }
 
 impl Image {
-    pub fn new(path: String) -> Result<Image> {    
+    pub fn new(path: &str) -> Result<Image> {    
         Ok(Image {
             hash: None,
-            partial_hash: Image::read_part(path.clone())?,
-            path: path
+            partial_hash: Image::read_part(path)?,
+            path: path.to_string()
         })
     }
     
-    fn read_part(path: String) -> Result<u64> {
+    fn read_part(path: &str) -> Result<u64> {
         let input = File::open(path)?;
         let reader = BufReader::new(input);
         Ok(hash_one_part(reader)?)
@@ -31,12 +31,12 @@ impl Image {
         if let Some(_) = &self.hash {
             return Ok(());
         }
-        self.hash = Some(Image::read(self.path.clone())?);
+        self.hash = Some(Image::read(&self.path)?);
         Ok(())
     }
     
     
-    fn read(path: String) -> Result<u64> {
+    fn read(path: &str) -> Result<u64> {
         let input = File::open(path)?;
         let reader = BufReader::new(input);
         Ok(default_hasher(reader)?)
