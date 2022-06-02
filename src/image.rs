@@ -1,8 +1,9 @@
-use crate::hasher::{hash_one_part, default_hasher};
+use crate::hasher::{hash_one_part, default_hasher, BUFFER};
 use std::fs::File;
 use std::io::{BufReader, Result};
 use std::hash::{Hash, Hasher};
 use std::cmp::PartialEq;
+use std::path::Path;
 
 #[derive(Debug)]
 pub struct Image {
@@ -12,17 +13,17 @@ pub struct Image {
 }
 
 impl Image {
-    pub fn new(path: &str) -> Result<Image> {    
+    pub fn new(path: &Path) -> Result<Image> {    
         Ok(Image {
             hash: None,
             partial_hash: Image::read_part(path)?,
-            path: String::from(path)
+            path: path.to_str().unwrap().to_owned()
         })
     }
     
-    fn read_part(path: &str) -> Result<u64> {
+    fn read_part(path: &Path) -> Result<u64> {
         let input = File::open(path)?;
-        let reader = BufReader::new(input);
+        let reader = BufReader::with_capacity(BUFFER, input);
         Ok(hash_one_part(reader)?)
     }
     
@@ -42,8 +43,7 @@ impl Image {
 }
 
 impl Hash for Image {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.hash.hash(state);
+    fn hash<H: Hasher>(&self, _state: &mut H) {
     }
 }
 
