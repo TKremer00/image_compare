@@ -9,4 +9,4 @@ debug = true
 
 [dependencies]
 clap = { version = "3.1.18", features = ["derive"]}
-
+ahash = "0.7.6"

@@ -1,9 +1,10 @@
 use std::io::{Read, Result};
-use std::collections::hash_map::DefaultHasher;
+// use std::collections::hash_map::DefaultHasher;
+use ahash::AHasher;
 use std::hash::Hasher;
 
 pub fn default_hasher<R: Read>(mut reader: R) -> Result<u64> {
-    let mut hasher = DefaultHasher::new();
+    let mut hasher = AHasher::new_with_keys(1,2);
     let mut buffer = [0; 2024];
     
     loop {
@@ -19,7 +20,7 @@ pub fn default_hasher<R: Read>(mut reader: R) -> Result<u64> {
 }
 
 pub fn hash_one_part<R: Read>(mut reader: R) -> Result<u64> {
-    let mut hasher = DefaultHasher::new();
+    let mut hasher = AHasher::new_with_keys(1,2);
     let mut buffer = [0; 2024];
     
     let count = read_buffer(&mut buffer, &mut reader)?;
