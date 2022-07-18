@@ -1,8 +1,8 @@
 use std::fs::read_dir;
 use std::io::Result;
 use std::collections::HashMap;
-use std::time::SystemTime;
 use clap::Parser;
+use std::path::Path;
 
 mod image;
 mod hasher;
@@ -25,31 +25,30 @@ fn main() -> Result<()> {
     let path = &args.path;
     let resp = dir_to_images(path);
     let _ = csv::write_csv(resp);       
-    
+
     Ok(())
 }
 
 fn dir_to_images(path: &str) -> HashMap<Image, Vec<Image>> {
-    let mut images: HashMap<u64, (Image, Vec<Image>)> = HashMap::new();
     let paths = read_dir(path).unwrap();
+    let total_images = read_dir(path).unwrap().count();
+    let mut images: HashMap<u64, (Image, Vec<Image>)> = HashMap::with_capacity(total_images / 2);
     let mut images_done = 0;
-    let last_time = SystemTime::now();
     for path in paths {
-        match path.unwrap().path().to_str() {
-            Some(str_path) => {
-                proccess_image(str_path, &mut images);
-                if images_done % 25 == 0 {
-                    println!("{} - {}", images_done, last_time.elapsed().unwrap().as_secs());
-                }
-                
+        match path {
+            Ok(path) => {
+                proccess_image(&path.path(), &mut images);
                 images_done += 1;
+                if images_done % 100 == 0 {
+                    println!("{} / {}", images_done, total_images);
+                }
             },
-            None => {
+            Err(_) => {
                 println!("No str path");
             }
         }
     }
-    
+    println!("{} / {}", images_done, total_images);
     let duplicates : HashMap<Image, Vec<Image>> = images.into_iter().map(move |(_,v)| {
         (v.0, v.1)
     }).filter(|(_, v)| {
@@ -59,7 +58,7 @@ fn dir_to_images(path: &str) -> HashMap<Image, Vec<Image>> {
     duplicates
 }
 
-fn proccess_image(path: &str, images: &mut HashMap<u64, (Image, Vec<Image>)>) {
+fn proccess_image(path: &Path, images: &mut HashMap<u64, (Image, Vec<Image>)>) {
     let mut image = Image::new(path).unwrap();
 
     if images.contains_key(&image.partial_hash) {
