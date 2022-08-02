@@ -4,12 +4,14 @@ use std::io::{BufReader, Result};
 use std::hash::{Hash, Hasher};
 use std::cmp::PartialEq;
 use std::path::Path;
+use std::vec::Vec;
 
 #[derive(Debug)]
 pub struct Image {
     pub hash: Option<u64>,
     pub partial_hash: u64,
-    pub path: String
+    pub path: String,
+    pub duplicates: Vec<Image>,
 }
 
 impl Image {
@@ -17,7 +19,8 @@ impl Image {
         Ok(Image {
             hash: None,
             partial_hash: Image::read_part(path)?,
-            path: path.to_str().unwrap().to_owned()
+            path: path.to_str().unwrap().to_owned(),
+            duplicates : Vec::default(),
         })
     }
     
@@ -40,6 +43,14 @@ impl Image {
         let reader = BufReader::new(input);
         Ok(default_hasher(reader)?)
     }    
+    
+    pub fn is_empty(&self) -> bool {
+        self.duplicates.is_empty()
+    }
+    
+    pub fn add(&mut self, image: Image) {
+        self.duplicates.push(image);
+    }
 }
 
 impl Hash for Image {

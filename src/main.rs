@@ -1,8 +1,9 @@
 use std::fs::read_dir;
 use std::io::Result;
-use std::collections::HashMap;
 use clap::Parser;
 use std::path::Path;
+use ahash::AHashMap;
+use kdam::prelude::*;
 
 mod image;
 mod hasher;
@@ -18,7 +19,6 @@ struct Args {
     path : String,
 }
 
-
 fn main() -> Result<()> {
     let args = Args::parse();
     
@@ -29,48 +29,45 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn dir_to_images(path: &str) -> HashMap<Image, Vec<Image>> {
+fn dir_to_images(path: &str) -> Vec<Image> {
     let paths = read_dir(path).unwrap();
     let total_images = read_dir(path).unwrap().count();
-    let mut images: HashMap<u64, (Image, Vec<Image>)> = HashMap::with_capacity(total_images / 2);
-    let mut images_done = 0;
+    let mut pb = tqdm!(total = total_images);
+    let mut images: AHashMap<u64, Image> = AHashMap::with_capacity(total_images / 2);
     for path in paths {
         match path {
             Ok(path) => {
                 proccess_image(&path.path(), &mut images);
-                images_done += 1;
-                if images_done % 100 == 0 {
-                    println!("{} / {}", images_done, total_images);
-                }
+                pb.update(1);
             },
             Err(_) => {
                 println!("No str path");
             }
         }
     }
-    println!("{} / {}", images_done, total_images);
-    let duplicates : HashMap<Image, Vec<Image>> = images.into_iter().map(move |(_,v)| {
-        (v.0, v.1)
-    }).filter(|(_, v)| {
-        v.len() > 0            
+    println!();
+    let duplicates : Vec<Image> = images.into_iter().map(move |(_,v)| {
+        v
+    }).filter(|v| {
+        !v.is_empty()            
     }).collect();
     
     duplicates
 }
 
-fn proccess_image(path: &Path, images: &mut HashMap<u64, (Image, Vec<Image>)>) {
+fn proccess_image(path: &Path, images: &mut AHashMap<u64, Image>) {
     let mut image = Image::new(path).unwrap();
 
     if images.contains_key(&image.partial_hash) {
         let entry = if let Some(entry) = images.get_mut(&image.partial_hash) { entry } else { panic!("no entry"); };
-        let _ = entry.0.read_complete_hash();
+        let _ = entry.read_complete_hash();
         let _ = image.read_complete_hash();
 
-        if entry.0.hash == image.hash {
-            entry.1.push(image);
+        if entry.hash == image.hash {
+            entry.add(image);
         }
     } else {
-        images.insert(image.partial_hash, (image, Vec::default()));
+        images.insert(image.partial_hash, image);
     }
 }
 
@@ -84,8 +81,8 @@ mod tests {
         let resp = dir_to_images(path);
         assert!(!resp.is_empty());
         assert_eq!(resp.len(), 1);
-        for (_, v) in resp {
-            assert_eq!(v.len(), 4);
+        for v in resp {
+            assert_eq!(v.duplicates.len(), 4);
         }
     }
     
