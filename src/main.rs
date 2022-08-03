@@ -33,7 +33,7 @@ fn dir_to_images(path: &str) -> Vec<Image> {
     let paths = read_dir(path).unwrap();
     let total_images = read_dir(path).unwrap().count();
     let mut pb = tqdm!(total = total_images);
-    let mut images: AHashMap<u64, Image> = AHashMap::with_capacity(total_images / 2);
+    let mut images: AHashMap<u64, Image> = AHashMap::with_capacity(total_images / 4 * 3);
     for path in paths {
         match path {
             Ok(path) => {

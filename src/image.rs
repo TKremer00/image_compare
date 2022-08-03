@@ -20,7 +20,7 @@ impl Image {
             hash: None,
             partial_hash: Image::read_part(path)?,
             path: path.to_str().unwrap().to_owned(),
-            duplicates : Vec::default(),
+            duplicates: Vec::default(),
         })
     }
     
