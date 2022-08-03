@@ -1,12 +1,12 @@
-use crate::hasher::{hash_one_part, default_hasher, BUFFER};
-use std::fs::File;
-use std::io::{BufReader, Result};
-use std::hash::{Hash, Hasher};
+use crate::hasher::{default_hasher, hash_one_part, BUFFER};
 use std::cmp::PartialEq;
+use std::fs::File;
+use std::hash::{Hash, Hasher};
+use std::io::{BufReader, Result};
 use std::path::Path;
 use std::vec::Vec;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Image {
     pub hash: Option<u64>,
     pub partial_hash: u64,
@@ -15,7 +15,7 @@ pub struct Image {
 }
 
 impl Image {
-    pub fn new(path: &Path) -> Result<Image> {    
+    pub fn new(path: &Path) -> Result<Image> {
         Ok(Image {
             hash: None,
             partial_hash: Image::read_part(path)?,
@@ -23,13 +23,13 @@ impl Image {
             duplicates: Vec::default(),
         })
     }
-    
+
     fn read_part(path: &Path) -> Result<u64> {
         let input = File::open(path)?;
         let reader = BufReader::with_capacity(BUFFER, input);
         Ok(hash_one_part(reader)?)
     }
-    
+
     pub fn read_complete_hash(&mut self) -> Result<()> {
         if let Some(_) = &self.hash {
             return Ok(());
@@ -37,25 +37,24 @@ impl Image {
         self.hash = Some(Image::read(&self.path)?);
         Ok(())
     }
-    
+
     fn read(path: &str) -> Result<u64> {
         let input = File::open(path)?;
         let reader = BufReader::new(input);
         Ok(default_hasher(reader)?)
-    }    
-    
+    }
+
     pub fn is_empty(&self) -> bool {
         self.duplicates.is_empty()
     }
-    
+
     pub fn add(&mut self, image: Image) {
         self.duplicates.push(image);
     }
 }
 
 impl Hash for Image {
-    fn hash<H: Hasher>(&self, _state: &mut H) {
-    }
+    fn hash<H: Hasher>(&self, _state: &mut H) {}
 }
 
 impl Eq for Image {}
