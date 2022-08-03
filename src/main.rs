@@ -67,12 +67,7 @@ fn dir_to_images(path: &str) -> Vec<Image> {
 fn proccess_image(path: &Path, images: &mut Vec<AHashMap<u64, Image>>) {
     let mut image = Image::new(path).unwrap();
     for list in images.iter_mut() {
-        if list.contains_key(&image.partial_hash) {
-            let entry = if let Some(entry) = list.get_mut(&image.partial_hash) {
-                entry
-            } else {
-                panic!("no entry");
-            };
+        if let Some(entry) = list.get_mut(&image.partial_hash) {
             let _ = entry.read_complete_hash();
             let _ = image.read_complete_hash();
 
