@@ -7,9 +7,9 @@ pub fn write_csv(duplicates: Vec<Image>) -> Result<()> {
     let mut f = File::create("duplicates.csv")?;
     f.write(b"root*duplicates\n")?;
     for ref v in duplicates {
-        f.write(v.path.as_bytes())?;
+        f.write(v.path.as_ref().to_str().unwrap().as_bytes())?;
         f.write(b"*")?;
-        let paths: Vec<String> = v.duplicates.iter().map(|i| i.path.clone()).collect();
+        let paths: Vec<_> = v.duplicates.iter().map(|i| i.path.as_ref().to_str().unwrap().clone()).collect();
 
         f.write(paths.join(":").as_bytes())?;
         f.write(b"\n")?;
