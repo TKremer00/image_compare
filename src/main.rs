@@ -10,7 +10,7 @@ mod image_reader;
 
 fn main() -> Result<()> {
     let directory_entries: Vec<Result<DirEntry>> =
-        read_dir("/mnt/hdd/_del/extHddData/anubis/output/0-20000/")?
+        read_dir("./files/")?
             .into_iter()
             .collect();
 
