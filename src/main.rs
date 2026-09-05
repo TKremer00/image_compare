@@ -6,10 +6,7 @@ use std::{
 mod duplication_pipeline;
 mod hasher;
 mod image;
-
-// TODO: !!!!! Need to fix linked list, because now it reads random memory!
-// hyperfine --warmup 3   './target/release/image_compare_old' './target/release/image_compare' '../image_compare_old/target/release/image_compare --path /mnt/hdd/_del/extHddData/anubis/output/0-20000/'
-// https://github.com/jonhoo/inferno
+mod image_reader;
 
 fn main() -> Result<()> {
     let directory_entries: Vec<Result<DirEntry>> =
