@@ -1,31 +1,59 @@
-use ahash::AHasher;
-use std::hash::Hasher;
-use std::io::{Read, Result};
+// use std::{
+//     collections::HashMap,
+//     hash::{BuildHasherDefault, Hasher},
+// };
+// i
 
-pub const BUFFER: usize = 3024;
+// pub type FastHashMap<K, V> = HashMap<K, V, BuildHasherDefault<IdentityHasher>>;
 
-pub fn default_hasher<R: Read>(mut reader: R) -> Result<u64> {
-    let mut hasher = AHasher::new_with_keys(1, 2);
-    let mut buffer = [0; BUFFER * 2];
+// #[derive(Default)]
+// pub struct IdentityHasher {
+//     value: u64,
+// }
 
-    loop {
-        let count = reader.read(&mut buffer)?;
+// impl Hasher for IdentityHasher {
+//     #[inline]
+//     fn write_u64(&mut self, value: u64) {
+//         self.value = value;
+//     }
 
-        if count == 0 {
-            break;
-        }
+//     fn finish(&self) -> u64 {
+//         self.value
+//     }
 
-        hasher.write(&buffer[..count]);
-    }
+//     fn write(&mut self, bytes: &[u8]) {
+//         todo!()
+//     }
+// }
 
-    Ok(hasher.finish())
+use std::hash::{BuildHasherDefault, Hasher};
+
+pub type FastHashMap<K, V> = std::collections::HashMap<K, V, BuildHasherDefault<IdentityHasher>>;
+
+#[derive(Default)]
+pub struct IdentityHasher {
+    value: u64,
 }
 
-pub fn hash_one_part<R: Read>(mut reader: R) -> Result<u64> {
-    let mut hasher = AHasher::new_with_keys(1, 2);
-    let mut buffer = [0; BUFFER];
+impl Hasher for IdentityHasher {
+    #[inline]
+    fn write(&mut self, bytes: &[u8]) {
+        debug_assert_eq!(bytes.len(), 8);
 
-    let count = reader.read(&mut buffer)?;
-    hasher.write(&buffer[..count]);
-    Ok(hasher.finish())
+        let bytes: [u8; 8] = bytes
+            .try_into()
+            .expect("IdentityHasher::write expected 8 bytes");
+
+        self.value = u64::from_ne_bytes(bytes);
+    }
+
+    #[inline]
+    fn write_u64(&mut self, value: u64) {
+        self.value = value;
+    }
+
+    #[inline]
+    fn finish(&self) -> u64 {
+        self.value
+    }
 }

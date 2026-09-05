@@ -1,125 +1,170 @@
-use crate::hasher::{default_hasher, hash_one_part, BUFFER};
-use std::borrow::Cow;
-use std::boxed::Box;
-use std::cmp::PartialEq;
-use std::fs::File;
-use std::hash::{Hash, Hasher};
-use std::io::{BufReader, Result};
-use std::path::Path;
-use std::vec::Vec;
+use ahash::AHasher;
+use std::{
+    fs::File,
+    hash::Hasher,
+    io,
+    marker::PhantomData,
+    mem::MaybeUninit,
+    os::{fd::AsRawFd, unix::fs::MetadataExt},
+    path::Path,
+};
+use xxhash_rust::xxh64::Xxh64;
 
-#[derive(Debug, Clone)]
+use io_uring::{opcode, types::Fd, IoUring};
+
+const BUF_SIZE: usize = 1024 * 3; // 3 KB
+
 pub struct Image {
-    pub hex: ImageHash,
     pub path: Box<Path>,
-    pub duplicates: Vec<Image>,
 }
 
 impl Image {
-    pub fn new(path: &Path) -> Result<Image> {
-        Ok(Image {
-            hex: ImageHash::new(&path)?,
-            path: Box::from(path),
-            duplicates: Vec::default(),
-        })
-    }
-
-    #[inline]
-    pub fn is_empty(&self) -> bool {
-        self.duplicates.is_empty()
-    }
-
-    pub fn compare(&mut self, image: &mut Image) -> bool {
-        let my_hash = if self.hex.has_hash() {
-            self.hex.get_hash()
-        } else {
-            self.hex.get_and_set_hash(self.path.as_ref())
-        };
-
-        let other_hash = if image.hex.has_hash() {
-            image.hex.get_hash()
-        } else {
-            image.hex.get_and_set_hash(image.path.as_ref())
-        };
-
-        my_hash == other_hash
-    }
-
-    #[inline]
-    pub fn add(&mut self, image: Image) {
-        self.duplicates.push(image);
-    }
-}
-
-impl Hash for Image {
-    #[inline]
-    fn hash<H: Hasher>(&self, _state: &mut H) {}
-}
-
-impl Eq for Image {}
-
-impl PartialEq for Image {
-    #[inline]
-    fn eq(&self, other: &Self) -> bool {
-        self.hex.partial_hash == other.hex.partial_hash
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct ImageHash {
-    pub partial_hash: Cow<'static, u64>,
-    hash: Option<u64>,
-}
-
-impl ImageHash {
-    pub fn new(path: &Path) -> Result<ImageHash> {
-        Ok(ImageHash {
-            partial_hash: Cow::Owned(ImageHash::read_partial(path)?),
-            hash: None,
-        })
-    }
-
-    #[inline]
-    pub fn has_hash(&self) -> bool {
-        self.hash.is_some()
-    }
-
-    #[inline]
-    pub fn get_hash(&self) -> &Option<u64> {
-        &self.hash
-    }
-
-    #[inline]
-    pub fn get_and_set_hash(&mut self, path: &Path) -> &Option<u64> {
-        if self.hash.is_none() {
-            self.hash = Some(ImageHash::read(path).unwrap());
+    pub fn new(image: &ImageReference) -> Self {
+        Self {
+            path: Box::from(image.path),
         }
-        &self.hash
-    }
-
-    fn read_partial(path: &Path) -> Result<u64> {
-        let input = File::open(path)?;
-        let reader = BufReader::with_capacity(BUFFER, input);
-        Ok(hash_one_part(reader)?)
-    }
-
-    fn read(path: &Path) -> Result<u64> {
-        let input = File::open(path)?;
-        let reader = BufReader::new(input);
-        Ok(default_hasher(reader)?)
     }
 }
 
-impl Hash for ImageHash {
-    #[inline]
-    fn hash<H: Hasher>(&self, _state: &mut H) {}
+pub struct ImageReference<'a> {
+    pub path: &'a Path,
 }
 
-impl Eq for ImageHash {}
+impl<'a> ImageReference<'a> {
+    pub fn new(path: &'a Path) -> Self {
+        Self { path: path }
+    }
 
-impl PartialEq for ImageHash {
-    #[inline]
-    fn eq(&self, other: &Self) -> bool {
-        self.partial_hash == other.partial_hash
+    pub fn get_file_size(&self) -> u64 {
+        self.path
+            .metadata()
+            .expect("File exists and should have metadata")
+            .size()
+    }
+}
+
+pub struct ImageReader<H: Hasher + Default> {
+    ring: IoUring,
+    phantom: PhantomData<H>,
+}
+
+#[inline]
+pub fn xxh_reader() -> io::Result<ImageReader<Xxh64>> {
+    ImageReader::new()
+}
+
+#[inline]
+pub fn ahash_reader() -> io::Result<ImageReader<AHasher>> {
+    ImageReader::new()
+}
+
+impl<H: std::hash::Hasher + Default> ImageReader<H> {
+    fn new() -> io::Result<Self> {
+        Ok(Self {
+            ring: IoUring::new(8)?,
+            phantom: PhantomData,
+        })
+    }
+
+    fn read_buffer(
+        &mut self,
+        fd: Fd,
+        buffer: &mut [MaybeUninit<u8>],
+        offset: u64,
+    ) -> io::Result<usize> {
+        let read = opcode::Read::new(fd, buffer.as_mut_ptr() as *mut u8, buffer.len() as u32)
+            .offset(offset)
+            .build()
+            .user_data(0);
+
+        unsafe {
+            self.ring
+                .submission()
+                .push(&read)
+                .expect("submission queue full");
+        }
+
+        self.ring.submit_and_wait(1)?;
+
+        let cqe = self
+            .ring
+            .completion()
+            .next()
+            .expect("io_uring returned no completion");
+
+        let result = cqe.result();
+
+        if result < 0 {
+            return Err(io::Error::from_raw_os_error(-result));
+        }
+
+        Ok(result as usize)
+    }
+
+    pub fn read_file_part(&mut self, path: &Path) -> io::Result<u64> {
+        let file = File::open(path)?;
+
+        let fd = Fd(file.as_raw_fd());
+
+        let mut buffer = [MaybeUninit::<u8>::uninit(); BUF_SIZE];
+
+        let mut hasher = H::default();
+
+        let bytes_read = self.read_buffer(fd, &mut buffer, 0)?;
+
+        if bytes_read != 0 {
+            // SAFETY:
+            //
+            // io_uring was told to write into the buffer, and the kernel
+            // reported that `bytes_read` bytes were successfully read.
+            // Therefore the first `bytes_read` bytes are initialized.
+            let initialized =
+                unsafe { std::slice::from_raw_parts(buffer.as_ptr() as *const u8, bytes_read) };
+
+            hasher.write(initialized);
+        }
+
+        Ok(hasher.finish())
+    }
+
+    pub fn read_file(&mut self, path: &Path) -> io::Result<u64> {
+        let file = File::open(path)?;
+        let fd = Fd(file.as_raw_fd());
+
+        // Allocate the buffer without zero-initializing it.
+        //
+        // This buffer is reused for every read.
+        let mut buffer = [MaybeUninit::<u8>::uninit(); BUF_SIZE];
+
+        let mut hasher = H::default();
+        let mut offset = 0u64;
+
+        loop {
+            let bytes_read = self.read_buffer(fd, &mut buffer, offset)?;
+
+            if bytes_read == 0 {
+                break;
+            }
+
+            // SAFETY:
+            //
+            // The kernel has initialized exactly `bytes_read` bytes through
+            // the io_uring read operation. We only expose those bytes as
+            // initialized `u8`s.
+            let initialized =
+                unsafe { std::slice::from_raw_parts(buffer.as_ptr() as *const u8, bytes_read) };
+
+            hasher.write(initialized);
+
+            offset += bytes_read as u64;
+
+            // If fewer bytes than the buffer size were returned, we've
+            // reached EOF.
+            if bytes_read < BUF_SIZE {
+                break;
+            }
+        }
+
+        Ok(hasher.finish())
     }
 }
