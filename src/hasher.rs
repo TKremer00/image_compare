@@ -1,31 +1,3 @@
-// use std::{
-//     collections::HashMap,
-//     hash::{BuildHasherDefault, Hasher},
-// };
-// i
-
-// pub type FastHashMap<K, V> = HashMap<K, V, BuildHasherDefault<IdentityHasher>>;
-
-// #[derive(Default)]
-// pub struct IdentityHasher {
-//     value: u64,
-// }
-
-// impl Hasher for IdentityHasher {
-//     #[inline]
-//     fn write_u64(&mut self, value: u64) {
-//         self.value = value;
-//     }
-
-//     fn finish(&self) -> u64 {
-//         self.value
-//     }
-
-//     fn write(&mut self, bytes: &[u8]) {
-//         todo!()
-//     }
-// }
-
 use std::hash::{BuildHasherDefault, Hasher};
 
 pub type FastHashMap<K, V> = std::collections::HashMap<K, V, BuildHasherDefault<IdentityHasher>>;
